@@ -34,6 +34,7 @@ import com.dmtavt.fragpipe.tools.crystalc.CrystalcParams;
 import com.dmtavt.fragpipe.tools.fragger.MsfraggerParams;
 import com.dmtavt.fragpipe.tools.ionquant.QuantPanelLabelfree;
 import com.dmtavt.fragpipe.tools.pepproph.PepProphPanel;
+import com.dmtavt.fragpipe.tools.percolator.PercolatorPanel;
 import com.dmtavt.fragpipe.tools.philosopher.ReportPanel;
 import com.dmtavt.fragpipe.tools.protproph.ProtProphPanel;
 import com.dmtavt.fragpipe.tools.ptmprophet.PtmProphetPanel;
@@ -769,6 +770,35 @@ public class FragpipeRun {
       sharedPepxmlFiles.clear();
       sharedPepxmlFiles.putAll(pepProphOutputs);
 
+      return true;
+    });
+
+    // run Percolator
+    final PercolatorPanel percolatorPanel = Fragpipe.getStickyStrict(PercolatorPanel.class);
+    final boolean isRunPercolator = percolatorPanel.isRun();
+    final boolean isCombinedPepxml_percolator = percolatorPanel.isCombinePepxml();
+
+    final CmdPercolator cmdPercolator = new CmdPercolator(isRunPercolator, wd);
+
+    addCheck.accept(() -> {
+      if (cmdPercolator.isRun()) {
+        return checkDbConfig(parent);
+      }
+      return true;
+    });
+    addConfig.accept(cmdPercolator, () -> {
+      if (cmdPercolator.isRun()) {
+        final String percolatorCmd = percolatorPanel.getCmdOpts();
+        final String enzymeName = tabMsf.getEnzymeName();
+        if (!cmdPercolator.configure(parent, usePhi, jarPath, isDryRun,
+            fastaFile, decoyTag, percolatorCmd, isCombinedPepxml_percolator, enzymeName, sharedPepxmlFiles)) {
+          return false;
+        }
+      }
+      Map<InputLcmsFile, List<Path>> percolatorOutputs = cmdPercolator
+          .outputs(sharedPepxmlFiles, tabMsf.getOutputFileExt(), isCombinedPepxml_percolator);
+      sharedPepxmlFiles.clear();
+      sharedPepxmlFiles.putAll(percolatorOutputs);
       return true;
     });
 
