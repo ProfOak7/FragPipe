@@ -134,7 +134,6 @@ public class PercolatorPanel extends JPanelBase {
     private String defaultCmdOpts() {
         String v = Fragpipe.getPropFix("percolator.cmd.line.opts", "closed");
         log.debug("Peptide prophet default value for Cmd Opts in ui fetched from properties: percolator.cmd.line.opts.closed={}", v);
-        System.out.println("v = " + v);
         return v;
     }
 
